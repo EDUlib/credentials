@@ -4,7 +4,8 @@ import six
 from bok_choy.page_object import PageObject
 from bok_choy.promise import EmptyPromise
 
-from acceptance_tests.config import BASIC_AUTH_PASSWORD, BASIC_AUTH_USERNAME, CREDENTIALS_API_URL, LMS_ROOT_URL
+from acceptance_tests.config import (BASIC_AUTH_PASSWORD, BASIC_AUTH_USERNAME, CREDENTIALS_API_URL,
+                                     CREDENTIALS_ROOT_URL, LMS_ROOT_URL)
 
 
 class CredentialsDRFPage(PageObject):
@@ -26,6 +27,42 @@ class CredentialsDRFPage(PageObject):
     def login(self):
         # Login by clicking on login button.
         self.q(xpath="//a[contains(text(), 'Log in')]").click()
+
+
+class CredentialsRecordsPage(PageObject):
+    @property
+    def url(self):
+        return self.page_url
+
+    def __init__(self, browser):
+        super(CredentialsRecordsPage, self).__init__(browser)
+        self.page_url = CREDENTIALS_ROOT_URL + '/records'
+
+    def is_browser_on_page(self):
+        self.wait_for_page()
+        self.wait_for_ajax()  # we rely on ajax for bulk of page, might as well make sure we're fully loaded here
+        return self.browser.title == 'My Records'
+
+    def go_to_program_record(self):
+        self.q(css='a[href^="/record/programs/"]').click()
+
+
+class CredentialsProgramRecordPage(PageObject):
+    @property
+    def url(self):
+        return self.page_url
+
+    def __init__(self, browser):
+        super(CredentialsProgramRecordPage, self).__init__(browser)
+        self.page_url = CREDENTIALS_ROOT_URL + '/records/programs/xxx'
+
+    def is_browser_on_page(self):
+        self.wait_for_page()
+        self.wait_for_ajax()  # we rely on ajax for bulk of page, might as well make sure we're fully loaded here
+        return self.browser.title.endswith(' Record')
+
+    def go_to_program_record(self):
+        self.q(css='a[href^="/record/programs/"]').click()
 
 
 @six.add_metaclass(abc.ABCMeta)  # pylint: disable=abstract-method
@@ -93,3 +130,25 @@ class LMSProgramListingPage(LMSPage):
 
     def get_credential_link(self):
         return self.q(css=self.credential_css_selector + ' a').attrs('href')[0]
+
+
+class LMSProgramProgressPage(LMSPage):
+    def __init__(self, browser):
+        super(LMSProgramProgressPage, self).__init__(browser)
+        self.record_css_selector = '.program-record'
+
+    @property
+    def url(self):
+        return self._build_url('dashboard/programs/')
+
+    def is_browser_on_page(self):
+        return self.browser.title.startswith('Program Details')
+
+    def are_program_links_present(self):
+        return self.q(css=self.record_css_selector).present
+
+    def click_record_link(self):
+        self.q(css=self.record_css_selector + ' a').click()
+
+    def get_record_link(self):
+        return self.q(css=self.record_css_selector + ' a').attrs('href')[0]
