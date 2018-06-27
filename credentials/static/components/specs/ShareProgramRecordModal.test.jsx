@@ -13,6 +13,9 @@ const defaultProps = {
   uuid: '1a2b3c4d',
 };
 
+const handleClick = () => {};  // Mock analytics handleClick
+window.edx = { analytics: { handleClick } };
+
 describe('<ShareProgramRecordModal />', () => {
   describe('Happy Path', () => {
     beforeEach(() => {

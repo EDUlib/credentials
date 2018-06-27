@@ -14,10 +14,12 @@ class ShareProgramRecordModal extends React.Component {
     };
   }
 
-  sendRecord() {
-    this.setState({
-      recordSent: true,
-    });
+  getCheckedOrganizations() {
+    const organizations = [];
+
+    if (this.state.RIT) { organizations.push('RIT'); }
+    if (this.state.MIT) { organizations.push('MIT'); }
+    return organizations;
   }
 
   updateState(checked, name) {
@@ -26,8 +28,14 @@ class ShareProgramRecordModal extends React.Component {
     });
   }
 
+  sendRecord() {
+    this.setState({
+      recordSent: true,
+    });
+  }
+
   render() {
-    const { onClose, parentSelector } = this.props;
+    const { onClose, parentSelector, uuid } = this.props;
 
     return (
       <Modal
@@ -61,7 +69,14 @@ class ShareProgramRecordModal extends React.Component {
           <Button
             label={gettext('Send')}
             buttonType="primary"
-            onClick={this.sendRecord}
+            onClick={(event) => {
+              this.sendRecord(event); window.edx.analytics.handleClick(event);
+            }}
+            data-track-type="click"
+            data-track-event="edx.bi.credentials.program_record.send_finished"
+            data-track-event-property-category="records"
+            data-track-event-property-program-uuid={uuid}
+            data-track-event-property-organizations={this.getCheckedOrganizations()}
           />,
         ]}
       />
@@ -75,11 +90,13 @@ ShareProgramRecordModal.propTypes = {
     PropTypes.string,
     PropTypes.bool,
   ]),
+  uuid: PropTypes.string,
 };
 
 ShareProgramRecordModal.defaultProps = {
   onClose: () => {},
   parentSelector: false,
+  uuid: '',
 };
 
 export default ShareProgramRecordModal;

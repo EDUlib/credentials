@@ -8,6 +8,9 @@ const defaultProps = {
   parentSelector: 'body',
 };
 
+const handleClick = () => {};  // Mock analytics handleClick
+window.edx = { analytics: { handleClick } };
+
 describe('<SendLearnerRecordModal />', () => {
   beforeEach(() => {
     wrapper = mount(<SendLearnerRecordModal {...defaultProps} />);

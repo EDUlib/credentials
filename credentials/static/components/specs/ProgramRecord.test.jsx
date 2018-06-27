@@ -55,6 +55,8 @@ const defaultProps = {
 
 // eslint-disable-next-line no-useless-escape
 const cookieJSON = '{\"username\": \"edx\"\\054 \"version\": 1\\054 \"header_urls\": {\"learner_profile\": \"http://localhost:18000/u/edx\"\\054 \"resume_block\": \"sample\"}}';
+const handleClick = () => {};  // Mock analytics handleClick
+window.edx = { analytics: { handleClick } };
 
 describe('<ProgramRecord />', () => {
   describe('User viewing own record', () => {

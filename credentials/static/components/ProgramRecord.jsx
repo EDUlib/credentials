@@ -141,13 +141,25 @@ class ProgramRecord extends React.Component {
             <Button
               label={gettext('Send Learner Record')}
               className={['btn-primary']}
-              onClick={this.loadSendRecordModal}
+              onClick={(event) => {
+                this.loadSendRecordModal(event); window.edx.analytics.handleClick(event);
+              }}
+              data-track-type="click"
+              data-track-event="edx.bi.credentials.program_record.send_started"
+              data-track-event-property-category="records"
+              data-track-event-property-program-uuid={uuid}
             />
             <Button
               label={gettext('Share')}
               className={['btn-secondary']}
-              onClick={this.loadShareModel}
+              onClick={(event) => {
+                this.loadShareModel(event); window.edx.analytics.handleClick(event);
+              }}
               inputRef={this.setShareButton}
+              data-track-type="click"
+              data-track-event="edx.bi.credentials.program_record.share_started"
+              data-track-event-property-category="records"
+              data-track-event-property-program-uuid={uuid}
             />
           </section>
         }
@@ -224,6 +236,7 @@ class ProgramRecord extends React.Component {
           <SendLearnerRecordModal
             {...defaultModalProps}
             onClose={this.closeSendRecordModal}
+            uuid={uuid}
           />
         }
         {shareModelOpen &&
