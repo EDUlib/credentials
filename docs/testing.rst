@@ -46,37 +46,32 @@ Credentials Configuration
 
 #. In the Credentials Django admin, configure a certificate for the XSeries program created above.
 
+#. Download the geckodriver package, untar it, and copy the executable into the container's /usr/local/bin:
+
+https://github.com/mozilla/geckodriver/releases/download/v0.20.1/geckodriver-v0.20.1-linux64.tar.gz
+
+...
+
+(Instructions written for Ubuntu 16.04)
+
+apt install chromium-chromedriver
+ln -s /usr/lib/chromium-browser/chromedriver /usr/local/bin/
+
+NOPE? Install Chrome - https://www.google.com/chrome/
+
+Somehow add --no-sandbox --disable-gpu to arguments...
+
+Can't add those via chromedriver...
+
+Next: go back to trying firefox, now that we're in a xenial container
+
+
 LMS Configuration
 *****************
 
-Running the acceptance tests successfully requires that you first correctly configure the ``LMS``, ``Programs``, and ``Credentials``. We'll start with the ``LMS``.
+Running the acceptance tests successfully requires that you first correctly configure the ``LMS`` and ``Credentials``. We'll start with the ``LMS``, assuming a standard devstack installation.
 
-#. Verify that the following settings in ``lms.env.json`` are correct::
-
-    "CREDENTIALS_ROOT_URL": "http://localhost:8150/"
-    "LMS_ROOT_URL": "http://127.0.0.1:8000"
-    "OAUTH_ENFORCE_SECURE": false
-    "OAUTH_OIDC_ISSUER": "http://127.0.0.1:8000/oauth2"
-
-#. Navigate to the Django admin and verify that an OAuth2 client with the following attributes exists. If one doesn't already exist, create a new one. The client ID and secret must match the values of Credentials's ``SOCIAL_AUTH_EDX_OIDC_KEY`` and ``SOCIAL_AUTH_EDX_OIDC_SECRET`` settings, respectively. ::
-
-    URL:  http://localhost:8150/
-    Redirect URI: http://localhost:8150/complete/edx-oidc/
-    Client ID: 'credentials-key'
-    Client Secret: 'credentials-secret'
-    Client Type: Confidential
-
-#. Navigate to the Django admin and verify that an OAuth2 client with the following attributes exists. If one doesn't already exist, create a new one. The client ID and secret must match the values of Programs's ``SOCIAL_AUTH_EDX_OIDC_KEY`` and ``SOCIAL_AUTH_EDX_OIDC_SECRET`` settings, respectively. ::
-
-    URL:  http://localhost:8004/
-    Redirect URI: http://localhost:8004/complete/edx-oidc/
-    Client ID: 'programs-key'
-    Client Secret: 'programs-secret'
-    Client Type: Confidential
-
-#. In the Django admin, verify that the OAuth2 clients referred to above are designated as a trusted clients. If this isn't already the case, add the clients created above as a new trusted clients.
-
-#. In the Django admin, create a new access token for the superuser which will be used for acceptance tests. Set the client to the OAuth2 client for credentials. Make note of this token; it is required to run the acceptance tests.
+#. In the Django admin, create a new access token for the superuser which will be used for acceptance tests. Set the client to the OAuth2 client for credentials. Make note of this token; it is required to run the acceptance tests. You may already have some of these tokens. In which case, you can just make note of the value for later.
 
 #. At a minimum, the acceptance tests require the existence of only one demo course on the LMS instance being used for testing. The edX Demonstration Course should be present by default on most LMS instances.
 
@@ -129,12 +124,12 @@ Running Acceptance Tests
 
 Run all acceptance tests by executing ``make accept``. To run a specific test, execute::
 
-    $ nosetests -v <path/to/the/test/module>
+    $ xvfb-run nosetests -v <path/to/the/test/module>
 
 As discussed above, the acceptance tests rely on configuration which can be specified using environment variables. For example, when running the acceptance tests against local instances of Programs and the LMS, you might run::
 
-    $  CREDENTIALS_ROOT_URL="http://localhost:8150/" LMS_ROOT_URL="http://127.0.0.1:8000" LMS_USERNAME="<username>" LMS_EMAIL="<email address>" LMS_PASSWORD="<password>" ACCESS_TOKEN="<access token>" PROGRAM_UUID=<program_uuid> make accept
+    $ SELENIUM_BROWSER=chrome CREDENTIALS_ROOT_URL="http://edx.devstack.credentials:18150/" LMS_ROOT_URL="http://edx.devstack.lms:18000" LMS_USERNAME="<username>" LMS_EMAIL="<email address>" LMS_PASSWORD="<password>" ACCESS_TOKEN="<access token>" PROGRAM_UUID=<program_uuid> xvfb-run make accept
 
 When running against a production-like staging environment, you might run::
 
-    $ CREDENTIALS_ROOT_URL="https://credentials.stage.edx.org" LMS_URL_ROOT="https://courses.stage.edx.org" LMS_USERNAME="<username>" LMS_EMAIL="<email address>" LMS_PASSWORD="<password>" ACCESS_TOKEN="<access token>" PROGRAM_UUID=<program_uuid> make accept
+    $ CREDENTIALS_ROOT_URL="https://credentials.stage.edx.org" LMS_URL_ROOT="https://courses.stage.edx.org" LMS_USERNAME="<username>" LMS_EMAIL="<email address>" LMS_PASSWORD="<password>" ACCESS_TOKEN="<access token>" PROGRAM_UUID=<program_uuid> xvfb-run make accept

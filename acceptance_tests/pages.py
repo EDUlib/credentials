@@ -40,7 +40,7 @@ class CredentialsRecordsPage(PageObject):
 
     def is_browser_on_page(self):
         self.wait_for_page()
-        self.wait_for_ajax()  # we rely on ajax for bulk of page, might as well make sure we're fully loaded here
+        self.wait_for_ajax()  # we rely on react for bulk of page, might as well make sure we're fully loaded here
         return self.browser.title == 'My Records'
 
     def go_to_program_record(self):
