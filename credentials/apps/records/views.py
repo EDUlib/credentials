@@ -240,7 +240,9 @@ class ProgramRecordCsvView(View):
     """
 
     def get(self, request, *args, **kwargs):
-        program_cert_record = ProgramCertRecord.objects.get(uuid=kwargs.get('uuid'))
+        if not waffle.flag_is_active(request, WAFFLE_FLAG_RECORDS):
+            raise http.Http404()
+        program_cert_record = get_object_or_404(ProgramCertRecord, uuid=kwargs.get('uuid'))
 
         #TODO change this certificate_id to be program_uuid in a separate set of PRs to fix the migrations
         # record = get_record_data(program_cert_record.user, program_cert_record.certificate_id, request.site)
@@ -257,5 +259,5 @@ class ProgramRecordCsvView(View):
             program_name=record['program']['name']
         )
         response = HttpResponse(string_io, content_type='text/csv')
-        response['Content-Disposition'] = 'attachment; filename={filename}.csv'.format(filename=filename)
+        response['Content-Disposition'] = 'attachment; filename={filename}'.format(filename=filename)
         return response
