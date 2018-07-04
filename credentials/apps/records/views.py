@@ -247,9 +247,9 @@ class ProgramRecordCsvView(View):
         # FIXME currently using this hardcoded UUID for progams until migrations land
         record = get_record_data(program_cert_record.user, 'aad14268108727563ff4bb8cf703c9ff', request.site)
 
-        print(record)
         string_io = io.StringIO()
-        writer = csv.writer(string_io, quoting=csv.QUOTE_ALL)
+        writer = csv.DictWriter(string_io, record['grades'][0].keys(), quoting=csv.QUOTE_ALL)
+        writer.writeheader()
         writer.writerows(record['grades'])
         string_io.seek(0)
         filename = '{full_name}_{program_name}_grades.csv'.format(
