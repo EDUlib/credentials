@@ -175,7 +175,7 @@ class ProgramRecordView(LoginRequiredMixin, TemplateView, ThemeViewMixin):
         user = self.request.user
         platform_name = self.request.site.siteconfiguration.platform_name
 
-        return get_record_data(user, program_uuid,site, platform_name=platform_name)
+        return get_record_data(user, program_uuid, site, platform_name=platform_name)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -234,6 +234,7 @@ class ProgramRecordCreationView(View):
             return JsonResponse({'error': 'Waffle flag not enabled'}, status=404)
         return super().dispatch(request, *args, **kwargs)
 
+
 class ProgramRecordCsvView(View):
     """
     Returns a csv view of the Progam Record for a Learner from a username and program_uuid
@@ -244,7 +245,7 @@ class ProgramRecordCsvView(View):
             raise http.Http404()
         program_cert_record = get_object_or_404(ProgramCertRecord, uuid=kwargs.get('uuid'))
 
-        #TODO change this certificate_id to be program_uuid in a separate set of PRs to fix the migrations
+        # TODO change this certificate_id to be program_uuid in a separate set of PRs to fix the migrations
         # record = get_record_data(program_cert_record.user, program_cert_record.certificate_id, request.site)
         # FIXME currently using this hardcoded UUID for progams until migrations land
         record = get_record_data(program_cert_record.user, 'aad14268108727563ff4bb8cf703c9ff', request.site)
