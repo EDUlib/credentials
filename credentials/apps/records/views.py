@@ -218,12 +218,6 @@ class ProgramRecordCreationView(View):
         cert_uuid = request.POST.get('program_cert_uuid')
         certificate = get_object_or_404(ProgramCertificate, program_uuid=cert_uuid)
 
-        # verify that the User has the User Credentials for the Program Certificate
-        try:
-            UserCredential.objects.get(username=username, program_credentials__program_uuid=cert_uuid)
-        except UserCredential.DoesNotExist:
-            return JsonResponse({'error': 'User does not have credentials'}, status=404)
-
         pcr, created = ProgramCertRecord.objects.get_or_create(user=user, certificate=certificate)
         status_code = 201 if created else 200
 
