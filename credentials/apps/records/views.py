@@ -4,6 +4,7 @@ import json
 from collections import defaultdict
 
 import waffle
+from analytics.client import Client as SegmentClient
 from django import http
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.contenttypes.models import ContentType
@@ -231,18 +232,36 @@ class ProgramRecordCreationView(View):
 
 class ProgramRecordCsvView(View):
     """
-    Returns a csv view of the Progam Record for a Learner from a username and program_uuid
+    Returns a csv view of the Program Record for a Learner from a username and public record uuid
     """
 
-    def get(self, request, *args, **kwargs):
+    def get(self, request, *_args, **kwargs):
         if not waffle.flag_is_active(request, WAFFLE_FLAG_RECORDS):
             raise http.Http404()
-        program_cert_record = get_object_or_404(ProgramCertRecord, uuid=kwargs.get('uuid'))
 
-        # TODO change this certificate_id to be program_uuid in a separate set of PRs to fix the migrations
-        # record = get_record_data(program_cert_record.user, program_cert_record.certificate_id, request.site)
-        # FIXME currently using this hardcoded UUID for progams until migrations land
-        record = get_record_data(program_cert_record.user, 'aad14268108727563ff4bb8cf703c9ff', request.site)
+        program_cert_record = get_object_or_404(ProgramCertRecord, uuid=kwargs.get('uuid'))
+        program_uuid = program_cert_record.certificate.program_uuid
+        record = get_record_data(program_cert_record.user, program_uuid, request.site)
+
+        # Send analytics event. We do this in python (rather than in JS when clicking the download button), since
+        # this URL could be hit from scripts or wherever.
+        site_configuration = request.site.siteconfiguration
+        analytics = SegmentClient(write_key=site_configuration.segment_key)
+        analytics.track(
+            event='edx.bi.credentials.program_record.download_started',
+            properties={
+                'category': 'records',
+                'program-uuid': program_uuid,
+                'record-uuid': program_cert_record.uuid,
+            },
+            context={
+                'page': {
+                    'path': request.path,
+                    'referrer': request.META['HTTP_REFERRER'],
+                },
+                'userAgent': request.META['HTTP_USER_AGENT'],
+            },
+        )
 
         string_io = io.StringIO()
         writer = csv.DictWriter(string_io, record['grades'][0].keys(), quoting=csv.QUOTE_ALL)
