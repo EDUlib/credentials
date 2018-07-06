@@ -7,6 +7,6 @@ from . import views
 urlpatterns = [
     url(r'^$', views.RecordsView.as_view(), name='index'),
     url(r'^programs/{uuid}/$'.format(uuid=UUID_PATTERN), views.ProgramRecordView.as_view(), name='programs'),
-    url(r'^shared/{uuid}/csv$'.format(uuid=UUID_PATTERN), views.ProgramRecordCsvView.as_view(), name='record_csv'),
+    url(r'^??shared??/{uuid}/csv$'.format(uuid=UUID_PATTERN), views.ProgramRecordCsvView.as_view(), name='record_csv'),
     url(r'^new/$', views.ProgramRecordCreationView.as_view(), name='cert_creation')
 ]
